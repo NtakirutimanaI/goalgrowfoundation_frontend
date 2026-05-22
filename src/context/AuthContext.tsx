@@ -58,8 +58,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
-      {!loading && children}
-    </AuthContext.Provider>
+        {loading ? <div className="spinner" style={{ textAlign: "center", marginTop: "2rem" }}>Loading...</div> : children}
+      </AuthContext.Provider>
   );
 };
 
