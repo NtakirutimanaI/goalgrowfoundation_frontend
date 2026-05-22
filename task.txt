@@ -1,0 +1,10 @@
+1. Setup Backend: Initialize TypeORM with PostgreSQL.
+2. Setup Backend: Create User entity and Authentication module (JWT, Login, Register).
+3. Setup Backend: Create PlayerProfile and SponsorProfile entities, and related CRUD endpoints.
+4. Setup Backend: Create Competition and Reward entities, and related CRUD endpoints.
+5. Setup Backend: Integrate Cloudinary for media uploads.
+6. Setup Frontend: Create Login and Registration components (with role selection).
+7. Setup Frontend: Build Admin Dashboard (Manage users, create competitions, assign rewards).
+8. Setup Frontend: Build Player Dashboard (View profile, parent info, upcoming competitions, rewards).
+9. Setup Frontend: Build Sponsor Dashboard (View players, track competitions).
+10. Integration: Connect Frontend dashboards to Backend APIs
