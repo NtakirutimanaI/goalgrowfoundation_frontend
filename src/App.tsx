@@ -29,10 +29,17 @@ import DonatePage from './pages/foundation/DonatePage'
 import EventRegistrationPage from './pages/EventRegistrationPage'
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
-  const { user } = useAuth()
-  if (!user) return <Navigate to="/login" replace />
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />
-  return <>{children}</>
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="spinner" style={{ textAlign: "center", marginTop: "2rem" }}>
+        Loading…
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  return <>{children}</>;
 }
 
 function DashboardRouter() {

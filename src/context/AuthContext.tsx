@@ -31,13 +31,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const token = localStorage.getItem('access_token');
       if (token) {
         try {
-          const res = await api.get('/auth/profile');
-          setUser(res.data);
-        } catch (error) {
+          // 1. Decode token to immediately authenticate the user locally
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const userData = {
+            id: payload.sub || '',
+            email: payload.email || '',
+            role: payload.role || 'user',
+            fullName: payload.name || '',
+            createdAt: payload.iat ? new Date(payload.iat * 1000).toISOString() : ''
+          } as any;
+          setUser(userData);
+          setLoading(false); // Render UI immediately
+
+          // 2. Fetch full profile in the background to get complete user details
+          try {
+            const res = await api.get('/auth/profile');
+            setUser(res.data);
+          } catch (profileErr: any) {
+            console.error('Failed to fetch full user profile', profileErr);
+            if (profileErr.response?.status === 401) {
+              // Token is invalid/expired according to server, clear session
+              localStorage.removeItem('access_token');
+              setUser(null);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to decode token', e);
           localStorage.removeItem('access_token');
+          setLoading(false);
         }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     };
     initAuth();
   }, []);
