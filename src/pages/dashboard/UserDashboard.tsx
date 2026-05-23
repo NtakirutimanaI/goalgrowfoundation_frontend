@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
-  User as UserIcon, Activity, Shield, LogOut, Heart, DollarSign, Check, X, 
+  User as UserIcon, Activity, Shield, LogOut, Heart, DollarSign, Check, X, Menu,
   Edit3, Camera, Loader2, Search, Moon, Sun, Bell, LayoutDashboard, Save, Plus
 } from 'lucide-react';
 import api from '../../services/api';
@@ -18,7 +18,20 @@ export default function UserDashboard() {
   const [showSearch, setShowSearch] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
+
+  // Update desktop flag on resize
+  useEffect(() => {
+    const handleResize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      setIsSidebarOpen(desktop);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [editForm, setEditForm] = useState({
     fullName: user?.fullName || '',
     phone: user?.phone || '',
@@ -34,7 +47,9 @@ export default function UserDashboard() {
     navigate('/');
   };
 
-  const closeMobileMenu = () => setIsSidebarOpen(false);
+  const closeMobileMenu = () => {
+    if (!isDesktop) setIsSidebarOpen(false);
+  };
 
   const handleSaveProfile = async () => {
     try {
@@ -73,24 +88,31 @@ export default function UserDashboard() {
   return (
     <div className={`dashboard-container ${isDarkMode ? 'dark-theme' : ''}`} style={{ background: isDarkMode ? '#0f172a' : '#f8fafc', minHeight: '100vh', display: 'flex' }}>
       {/* Mobile toggle button */}
-      <button className="mobile-sidebar-toggle mobile-only" onClick={() => setIsSidebarOpen(prev => !prev)} style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'transparent', border: 'none', color: isDarkMode ? '#fbbf24' : '#64748b', cursor: 'pointer', zIndex: 1100 }} aria-label="Toggle sidebar">
-        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {!isDesktop && (
+        <button className="mobile-sidebar-toggle" onClick={() => setIsSidebarOpen(prev => !prev)} style={{ position: 'absolute', top: '1.25rem', left: '1rem', background: 'transparent', border: 'none', color: isDarkMode ? '#fbbf24' : '#64748b', cursor: 'pointer', zIndex: 1100 }} aria-label="Toggle sidebar">
+          {isSidebarOpen ? <X size={24} /> : <Menu size={28} />}
+        </button>
+      )}
 
       {/* Sidebar */}
       <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`} style={{ 
-        width: '240px', background: isDarkMode ? '#1e293b' : 'white', 
+        width: isDesktop ? '240px' : '80vw', background: isDarkMode ? '#1e293b' : 'white', 
         borderRight: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}`,
         display: 'flex', flexDirection: 'column',
         position: 'fixed',
-        top: 0,
+        top: '60px',
         left: 0,
-        height: '100vh',
+        height: 'calc(100vh - 60px)',
         transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform 0.3s ease-in-out',
         zIndex: 1000
       }}>
         <div style={{ padding: '1.5rem' }}>
+          {!isDesktop && (
+            <button onClick={() => setIsSidebarOpen(false)} style={{ background: 'transparent', border: 'none', color: isDarkMode ? '#fbbf24' : '#64748b', cursor: 'pointer', position: 'absolute', top: '1rem', right: '1rem' }} aria-label="Close sidebar">
+              <X size={24} />
+            </button>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
             <div style={{ width: '32px', height: '32px', background: 'var(--primary)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
               <LayoutDashboard size={20} />
@@ -143,32 +165,34 @@ export default function UserDashboard() {
         )}
 
       {/* Main Content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: isSidebarOpen ? '240px' : '0', transition: 'margin-left 0.3s ease-in-out' }}>
-        <header style={{ height: '60px', background: isDarkMode ? '#1e293b' : 'white', borderBottom: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button onClick={() => {/* placeholder for add action */}} style={{ background: 'transparent', border: 'none', color: isDarkMode ? 'white' : 'var(--primary)', cursor: 'pointer' }} aria-label="Add">
-              <Plus size={20} />
-            </button>
+      <header className="dashboard-header" style={{ background: isDarkMode ? '#1e293b' : 'white', borderBottom: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', height: '60px', zIndex: 1100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button onClick={() => {/* placeholder for add action */}} style={{ background: 'transparent', border: 'none', color: isDarkMode ? 'white' : 'var(--primary)', cursor: 'pointer' }} aria-label="Add">
+            <Plus size={20} />
+          </button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div onClick={() => setIsDarkMode(!isDarkMode)} style={{ color: isDarkMode ? '#fbbf24' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div onClick={() => setIsDarkMode(!isDarkMode)} style={{ color: isDarkMode ? '#fbbf24' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </div>
-            <div style={{ color: '#64748b', cursor: 'pointer', position: 'relative' }}>
-              <Bell size={18} />
-              <span style={{ position: 'absolute', top: '-1px', right: '-1px', width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%' }}></span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="cursor-pointer" onClick={() => setActiveTab('profile')}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: 'var(--primary)' }}>
-                {user.avatarUrl ? <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.8rem' }}>U</div>}
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 800, color: isDarkMode ? 'white' : 'var(--primary)' }}>{user.fullName || 'User'}</p>
-              </div>
-              <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }} aria-label="Logout"><LogOut size={16} /></button>
-            </div>
+          <div style={{ color: '#64748b', cursor: 'pointer', position: 'relative' }}>
+            <Bell size={18} />
+            <span style={{ position: 'absolute', top: '-1px', right: '-1px', width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%' }}></span>
           </div>
-        </header>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="cursor-pointer" onClick={() => setActiveTab('profile')}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: 'var(--primary)' }}>
+              {user.avatarUrl ? <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.8rem' }}>U</div>}
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 800, color: isDarkMode ? 'white' : 'var(--primary)' }}>{user.fullName || 'User'}</p>
+            </div>
+            <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }} aria-label="Logout"><LogOut size={16} /></button>
+          </div>
+        </div>
+      </header>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: isDesktop && isSidebarOpen ? '240px' : '0', transition: 'margin-left 0.3s ease-in-out', paddingTop: '60px' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: isDesktop && isSidebarOpen ? '240px' : '0', transition: 'margin-left 0.3s ease-in-out', paddingTop: '60px' }}>
+        
 
         <div style={{ padding: '1rem 2rem', overflowY: 'auto' }}>
           {activeTab === 'overview' && (

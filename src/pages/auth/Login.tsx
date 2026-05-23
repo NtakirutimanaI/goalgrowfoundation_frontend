@@ -17,10 +17,13 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/auth/login', { email, password });
-      login(res.data.access_token, res.data.user);
-      toast.success('Login successful!');
-      navigate('/dashboard');
+      try {
+        await login(email, password);
+        toast.success('Login successful!');
+        navigate('/dashboard');
+      } catch (err: any) {
+        toast.error(err.message || 'Login failed');
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Login failed');
     }

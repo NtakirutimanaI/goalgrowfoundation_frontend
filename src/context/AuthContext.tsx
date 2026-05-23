@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { supabase } from '../services/supabase';
 
 interface User {
   id: string;
@@ -14,7 +15,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (token: string, userData: User) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: User) => void;
   loading: boolean;
@@ -28,51 +29,55 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        try {
-          // 1. Decode token to immediately authenticate the user locally
-          const payload = JSON.parse(atob(token.split('.')[1]));
+      const { data: { session }, error } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          // Use Supabase JWT as access token
+          localStorage.setItem('access_token', session.access_token);
+          const { user } = session;
           const userData = {
-            id: payload.sub || '',
-            email: payload.email || '',
-            role: payload.role || 'user',
-            fullName: payload.name || '',
-            createdAt: payload.iat ? new Date(payload.iat * 1000).toISOString() : ''
+            id: user.id,
+            email: user.email || '',
+            role: user.role || 'user',
+            fullName: user.user_metadata?.full_name || '',
+            createdAt: user.created_at || ''
           } as any;
           setUser(userData);
-          setLoading(false); // Render UI immediately
-
-          // 2. Fetch full profile in the background to get complete user details
+          setLoading(false);
+          // Optionally fetch additional profile from backend if needed
           try {
             const res = await api.get('/auth/profile');
             setUser(res.data);
           } catch (profileErr: any) {
-            console.error('Failed to fetch full user profile', profileErr);
-            if (profileErr.response?.status === 401) {
-              // Token is invalid/expired according to server, clear session
-              localStorage.removeItem('access_token');
-              setUser(null);
-            }
+            console.error('Failed to fetch backend profile', profileErr);
           }
-        } catch (e) {
-          console.error('Failed to decode token', e);
-          localStorage.removeItem('access_token');
+        } else {
           setLoading(false);
         }
-      } else {
-        setLoading(false);
-      }
     };
     initAuth();
   }, []);
 
-  const login = (token: string, userData: User) => {
-    localStorage.setItem('access_token', token);
-    setUser(userData);
+  const login = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      throw error;
+    }
+    if (data.session?.access_token) {
+      localStorage.setItem('access_token', data.session.access_token);
+      const { user } = data.session;
+      const userData = {
+        id: user.id,
+        email: user.email || '',
+        role: user.role || 'user',
+        fullName: user.user_metadata?.full_name || '',
+        createdAt: user.created_at || ''
+      } as any;
+      setUser(userData);
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('access_token');
     setUser(null);
   };
