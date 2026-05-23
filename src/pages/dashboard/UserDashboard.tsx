@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -13,21 +13,28 @@ export default function UserDashboard() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('overview');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     fullName: user?.fullName || '',
     phone: user?.phone || '',
     address: user?.address || ''
   });
 
+  useEffect(() => {
+    if (user) setActiveTab('overview');
+  }, [user]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  const closeMobileMenu = () => setIsSidebarOpen(false);
 
   const handleSaveProfile = async () => {
     try {
@@ -65,12 +72,23 @@ export default function UserDashboard() {
 
   return (
     <div className={`dashboard-container ${isDarkMode ? 'dark-theme' : ''}`} style={{ background: isDarkMode ? '#0f172a' : '#f8fafc', minHeight: '100vh', display: 'flex' }}>
-      
+      {/* Mobile toggle button */}
+      <button className="mobile-sidebar-toggle mobile-only" onClick={() => setIsSidebarOpen(prev => !prev)} style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'transparent', border: 'none', color: isDarkMode ? '#fbbf24' : '#64748b', cursor: 'pointer', zIndex: 1100 }} aria-label="Toggle sidebar">
+        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
       {/* Sidebar */}
-      <aside className="sidebar" style={{ 
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`} style={{ 
         width: '240px', background: isDarkMode ? '#1e293b' : 'white', 
         borderRight: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}`,
-        display: 'flex', flexDirection: 'column'
+        display: 'flex', flexDirection: 'column',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.3s ease-in-out',
+        zIndex: 1000
       }}>
         <div style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
@@ -79,16 +97,28 @@ export default function UserDashboard() {
             </div>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 900, color: isDarkMode ? 'white' : 'var(--primary)', textTransform: 'uppercase', letterSpacing: '-0.5px', margin: 0 }}>GoalGrow</h2>
           </div>
-
+          <nav>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
+              <li><Link to="/" onClick={closeMobileMenu}>Home</Link></li>
+              <li><Link to="/about/story" onClick={closeMobileMenu}>Our Story</Link></li>
+              <li><Link to="/about/mission" onClick={closeMobileMenu}>Mission & Vision</Link></li>
+              <li><Link to="/about/team" onClick={closeMobileMenu}>Our Team</Link></li>
+              <li><Link to="/services/coaching" onClick={closeMobileMenu}>Coaching</Link></li>
+              <li><Link to="/services/mentorship" onClick={closeMobileMenu}>Mentorship</Link></li>
+              <li><Link to="/services/scholarships" onClick={closeMobileMenu}>Scholarships</Link></li>
+              <li><Link to="/services/facilities" onClick={closeMobileMenu}>Facilities</Link></li>
+              <li><Link to="/donate" onClick={closeMobileMenu}>Donate</Link></li>
+            </ul>
+          </nav>
           <nav>
             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <li onClick={() => setActiveTab('profile')} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem', cursor: 'pointer', borderRadius: '10px', background: activeTab === 'profile' ? 'var(--primary)' : 'transparent', color: activeTab === 'profile' ? 'white' : (isDarkMode ? '#94a3b8' : '#64748b'), fontWeight: 700, transition: '0.2s', fontSize: '0.85rem' }}>
+              <li onClick={() => {setActiveTab('profile'); closeMobileMenu();}} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem', cursor: 'pointer', borderRadius: '10px', background: activeTab === 'profile' ? 'var(--primary)' : 'transparent', color: activeTab === 'profile' ? 'white' : (isDarkMode ? '#94a3b8' : '#64748b'), fontWeight: 700, transition: '0.2s', fontSize: '0.85rem' }}>
                 <UserIcon size={18} /> Profile
               </li>
-              <li onClick={() => setActiveTab('history')} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem', cursor: 'pointer', borderRadius: '10px', background: activeTab === 'history' ? 'var(--primary)' : 'transparent', color: activeTab === 'history' ? 'white' : (isDarkMode ? '#94a3b8' : '#64748b'), fontWeight: 700, transition: '0.2s', fontSize: '0.85rem' }}>
+              <li onClick={() => {setActiveTab('history'); closeMobileMenu();}} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem', cursor: 'pointer', borderRadius: '10px', background: activeTab === 'history' ? 'var(--primary)' : 'transparent', color: activeTab === 'history' ? 'white' : (isDarkMode ? '#94a3b8' : '#64748b'), fontWeight: 700, transition: '0.2s', fontSize: '0.85rem' }}>
                 <Activity size={18} /> Activity
               </li>
-              <li onClick={() => setActiveTab('security')} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem', cursor: 'pointer', borderRadius: '10px', background: activeTab === 'security' ? 'var(--primary)' : 'transparent', color: activeTab === 'security' ? 'white' : (isDarkMode ? '#94a3b8' : '#64748b'), fontWeight: 700, transition: '0.2s', fontSize: '0.85rem' }}>
+              <li onClick={() => {setActiveTab('security'); closeMobileMenu();}} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem', cursor: 'pointer', borderRadius: '10px', background: activeTab === 'security' ? 'var(--primary)' : 'transparent', color: activeTab === 'security' ? 'white' : (isDarkMode ? '#94a3b8' : '#64748b'), fontWeight: 700, transition: '0.2s', fontSize: '0.85rem' }}>
                 <Shield size={18} /> Security
               </li>
             </ul>
@@ -100,11 +130,23 @@ export default function UserDashboard() {
           </button>
         </div>
       </aside>
+        {isSidebarOpen && (
+          <div className="mobile-nav-backdrop" onClick={() => setIsSidebarOpen(false)} style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.4)',
+            zIndex: 900
+          }}></div>
+        )}
 
       {/* Main Content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: isSidebarOpen ? '240px' : '0', transition: 'margin-left 0.3s ease-in-out' }}>
         <header style={{ height: '60px', background: isDarkMode ? '#1e293b' : 'white', borderBottom: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <button onClick={() => setActiveTab('overview')} style={{ background: 'transparent', border: 'none', color: isDarkMode ? 'white' : 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}>Overview</button>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <Search size={18} style={{ color: '#94a3b8', cursor: 'pointer' }} onClick={() => setShowSearch(!showSearch)} />
               {showSearch && <input type="text" placeholder="Search..." style={{ marginLeft: '0.75rem', padding: '0.4rem 0.75rem', borderRadius: '15px', border: `1px solid ${isDarkMode ? '#475569' : '#e2e8f0'}`, background: isDarkMode ? '#0f172a' : '#f8fafc', color: isDarkMode ? 'white' : 'black', outline: 'none', width: '200px', fontSize: '0.8rem' }} autoFocus />}
@@ -130,13 +172,32 @@ export default function UserDashboard() {
         </header>
 
         <div style={{ padding: '1rem 2rem', overflowY: 'auto' }}>
+          {activeTab === 'overview' && (
+            <div style={{ padding: '1rem 2rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: isDarkMode ? 'white' : 'var(--primary)' }}>Dashboard Overview</h2>
+              <p style={{ color: '#64748b', marginTop: '0.5rem' }}>Welcome back, {user.fullName || user.email}! Here’s a quick snapshot of your activity.</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                <div style={{ background: isDarkMode ? '#1e293b' : 'white', padding: '1rem', borderRadius: '12px', border: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}` }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', color: isDarkMode ? 'white' : 'var(--primary)' }}>Donations</h3>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '1.2rem', fontWeight: 800 }}>$0.00</p>
+                </div>
+                <div style={{ background: isDarkMode ? '#1e293b' : 'white', padding: '1rem', borderRadius: '12px', border: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}` }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', color: isDarkMode ? 'white' : 'var(--primary)' }}>Projects</h3>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '1.2rem', fontWeight: 800 }}>0</p>
+                </div>
+                <div style={{ background: isDarkMode ? '#1e293b' : 'white', padding: '1rem', borderRadius: '12px', border: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}` }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', color: isDarkMode ? 'white' : 'var(--primary)' }}>Status</h3>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '1.2rem', fontWeight: 800, color: '#22c55e' }}>Active</p>
+                </div>
+              </div>
+            </div>
+          )}
           {activeTab === 'profile' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '1rem' }}>
                 <h1 style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', color: isDarkMode ? 'white' : 'var(--primary)', margin: 0 }}>My Profile</h1>
                 <p style={{ color: '#64748b', fontSize: '0.75rem', margin: 0 }}>Personal and contact information.</p>
               </div>
-              
               <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '1.5rem' }}>
                 <div style={{ background: isDarkMode ? '#1e293b' : 'white', padding: '1.5rem', borderRadius: '12px', border: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}`, textAlign: 'center' }}>
                   <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 1rem', borderRadius: '20px', overflow: 'hidden', background: 'var(--primary)' }}>
