@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   User as UserIcon, Activity, Shield, LogOut, Heart, DollarSign, Check, X, 
-  Edit3, Camera, Loader2, Search, Moon, Sun, Bell, LayoutDashboard, Save
+  Edit3, Camera, Loader2, Search, Moon, Sun, Bell, LayoutDashboard, Save, Plus
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -145,14 +145,12 @@ export default function UserDashboard() {
       {/* Main Content */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: isSidebarOpen ? '240px' : '0', transition: 'margin-left 0.3s ease-in-out' }}>
         <header style={{ height: '60px', background: isDarkMode ? '#1e293b' : 'white', borderBottom: `1px solid ${isDarkMode ? '#334155' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <button onClick={() => setActiveTab('overview')} style={{ background: 'transparent', border: 'none', color: isDarkMode ? 'white' : 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}>Overview</button>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Search size={18} style={{ color: '#94a3b8', cursor: 'pointer' }} onClick={() => setShowSearch(!showSearch)} />
-              {showSearch && <input type="text" placeholder="Search..." style={{ marginLeft: '0.75rem', padding: '0.4rem 0.75rem', borderRadius: '15px', border: `1px solid ${isDarkMode ? '#475569' : '#e2e8f0'}`, background: isDarkMode ? '#0f172a' : '#f8fafc', color: isDarkMode ? 'white' : 'black', outline: 'none', width: '200px', fontSize: '0.8rem' }} autoFocus />}
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button onClick={() => {/* placeholder for add action */}} style={{ background: 'transparent', border: 'none', color: isDarkMode ? 'white' : 'var(--primary)', cursor: 'pointer' }} aria-label="Add">
+              <Plus size={20} />
+            </button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div onClick={() => setIsDarkMode(!isDarkMode)} style={{ color: isDarkMode ? '#fbbf24' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </div>
@@ -160,13 +158,14 @@ export default function UserDashboard() {
               <Bell size={18} />
               <span style={{ position: 'absolute', top: '-1px', right: '-1px', width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%' }}></span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }} onClick={() => setActiveTab('profile')} className="cursor-pointer">
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 800, color: isDarkMode ? 'white' : 'var(--primary)' }}>{user.fullName || 'User'}</p>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="cursor-pointer" onClick={() => setActiveTab('profile')}>
               <div style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: 'var(--primary)' }}>
                 {user.avatarUrl ? <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.8rem' }}>U</div>}
               </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 800, color: isDarkMode ? 'white' : 'var(--primary)' }}>{user.fullName || 'User'}</p>
+              </div>
+              <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }} aria-label="Logout"><LogOut size={16} /></button>
             </div>
           </div>
         </header>
