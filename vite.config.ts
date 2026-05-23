@@ -7,7 +7,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://goalgrowfoundation-backend-2gnqikj9t.vercel.app',
+        target: 'https://goalgrowfoundation-backend.vercel.app',
         changeOrigin: true,
       },
     },
